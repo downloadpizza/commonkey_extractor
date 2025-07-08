@@ -6,39 +6,31 @@ use colored::*;
 const COMMON_KEY_OFFSET: u64 = 0xE0;
 
 fn main() -> std::io::Result<()> {
-    // Clear terminal
     clear_screen();
 
-    // Prompt
     println!("Where is your OTP path?");
     println!("You can drag and drop it in Finder / File Explorer.");
 
     print!("> ");
     io::stdout().flush().unwrap();
 
-    // Read input
     let mut input = String::new();
     io::stdin().read_line(&mut input).unwrap();
 
-    // Trim whitespace and possible quotes/apostrophes
-    let path = input.trim().trim_matches('"').trim_matches('\'');
+    let path = sanitize_path(&input);
 
-    // Check if file exists
-    if !metadata(path).is_ok() {
+    if !metadata(&path).is_ok() {
         eprintln!("{}", "ERROR! Path does not exist".red());
         std::process::exit(1);
     }
 
-    // Open file and seek to Common Key offset
-    let mut file = File::open(path)?;
+    let mut file = File::open(&path)?;
     file.seek(SeekFrom::Start(COMMON_KEY_OFFSET))?;
 
-    // Read 16 bytes (the key)
     let mut key = [0u8; 16];
     file.read_exact(&mut key)?;
 
-    // Print key in hex
-    println!("\nCommon Key:");
+    println!("\nHere is your Common Key:");
     for byte in &key {
         print!("{:02X}", byte);
     }
@@ -58,4 +50,15 @@ fn clear_screen() {
             .status()
             .unwrap();
     }
+}
+
+/// Sanitizes drag-n-drop paths:
+/// - Trims whitespace
+/// - Removes leading/trailing quotes or apostrophes
+/// - Converts escaped spaces (`\ `) to actual spaces
+fn sanitize_path(raw: &str) -> String {
+    raw.trim()
+        .trim_matches('"')
+        .trim_matches('\'')
+        .replace(r"\ ", " ")
 }
