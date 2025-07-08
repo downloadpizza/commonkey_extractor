@@ -8,7 +8,7 @@ A common key extractor for all platforms! (Windows, Linux and macOS)
 - [ ] Linux
 
 ## Usage
-Double click the executable. A CMD or Terminal (depending on your platform) window will appear.
+Double click the executable. A CMD or Terminal (depending on your platform) window will appear. <br>
 Drag and drop your otp.bin inside your Terminal/CMD window. <br> It will put the path to it and it will (normally) give you your common key after pressing enter.
 
 And done!
