@@ -15,6 +15,8 @@ To Contribute, fork the repo and make a branch using the following scheme:
 
 `<username>/<feature you wanna add>`
 
+Then, make a pull request and I'll see the changes you made.
+
 ## To do list
 
 - [x] Make it functional and usable
