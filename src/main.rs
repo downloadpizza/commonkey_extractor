@@ -23,6 +23,7 @@ fn main() -> io::Result<()> {
         clear_screen();
         println!("Where is your OTP path?");
         println!("You can drag and drop it in Finder / File Explorer.");
+        println!("To quit, you can always press Ctrl+C. Quit the app after you're done...");
         print!("> ");
         io::stdout().flush()?; // flush prompt
 
@@ -47,13 +48,11 @@ fn main() -> io::Result<()> {
         let mut key = [0u8; COMMON_KEY_SIZE];
         file.read_exact(&mut key)?;
 
-        println!("\nWii U Common Key:");
+        println!("\nYour Wii U's Common Key:");
         for byte in &key {
             print!("{:02X}", byte);
         }
         println!("\n");
-
-        println!("Press Ctrl+C to quit...");
 
         // Wait forever until Ctrl+C
         loop {
