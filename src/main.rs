@@ -1,64 +1,63 @@
-use std::fs::{File, metadata};
-use std::io::{self, Read, Seek, SeekFrom, Write};
-use std::process::Command;
+use std::fs::File;
+use std::io::{self, Read, Write, Seek};
+use std::path::Path;
+use std::{thread, time::Duration};
 use colored::*;
+use std::process::Command;
 
 const COMMON_KEY_OFFSET: u64 = 0xE0;
-
-fn main() -> std::io::Result<()> {
-    clear_screen();
-
-    println!("Where is your OTP path?");
-    println!("You can drag and drop it in Finder / File Explorer.");
-
-    print!("> ");
-    io::stdout().flush().unwrap();
-
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
-
-    let path = sanitize_path(&input);
-
-    if !metadata(&path).is_ok() {
-        eprintln!("{}", "ERROR! Path does not exist".red());
-        std::process::exit(1);
-    }
-
-    let mut file = File::open(&path)?;
-    file.seek(SeekFrom::Start(COMMON_KEY_OFFSET))?;
-
-    let mut key = [0u8; 16];
-    file.read_exact(&mut key)?;
-
-    println!("\nHere is your Common Key:");
-    for byte in &key {
-        print!("{:02X}", byte);
-    }
-    println!();
-
-    Ok(())
-}
+const COMMON_KEY_SIZE: usize = 16;
 
 fn clear_screen() {
     if cfg!(target_os = "windows") {
-        Command::new("cmd")
-            .args(&["/C", "cls"])
-            .status()
-            .unwrap();
+        // Windows
+        Command::new("cmd").args(&["/C", "cls"]).status().unwrap();
     } else {
-        Command::new("clear")
-            .status()
-            .unwrap();
+        // Linux and macOS
+        Command::new("clear").status().unwrap();
     }
 }
 
-/// Sanitizes drag-n-drop paths:
-/// - Trims whitespace
-/// - Removes leading/trailing quotes or apostrophes
-/// - Converts escaped spaces (`\ `) to actual spaces
-fn sanitize_path(raw: &str) -> String {
-    raw.trim()
-        .trim_matches('"')
-        .trim_matches('\'')
-        .replace(r"\ ", " ")
+fn main() -> io::Result<()> {
+    loop {
+        clear_screen();
+        println!("Where is your OTP path?");
+        println!("You can drag and drop it in Finder / File Explorer.");
+        println!("> ");
+        io::stdout().flush()?; // flush prompt
+
+        let mut path = String::new();
+        io::stdin().read_line(&mut path)?;
+        let path = path.trim().trim_matches(['\'', '"'].as_ref());
+
+        if !Path::new(&path).exists() {
+            eprintln!(
+                "{}",
+                "ERROR! Path does not exist. Did you misspell something? Trying again in 5 seconds..."
+                    .red()
+            );
+            thread::sleep(Duration::from_secs(5));
+            continue;
+        }
+
+        // Open OTP and read Common Key
+        let mut file = File::open(path)?;
+        file.seek(io::SeekFrom::Start(COMMON_KEY_OFFSET))?;
+
+        let mut key = [0u8; COMMON_KEY_SIZE];
+        file.read_exact(&mut key)?;
+
+        println!("\nWii U Common Key:");
+        for byte in &key {
+            print!("{:02X}", byte);
+        }
+        println!("\n");
+
+        println!("Press Ctrl+C to quit...");
+
+        // Wait forever until Ctrl+C
+        loop {
+            thread::sleep(Duration::from_secs(1));
+        }
+    }
 }
