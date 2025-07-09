@@ -31,6 +31,8 @@ fn main() -> io::Result<()> {
         io::stdin().read_line(&mut path)?;
         let path = path.trim().trim_matches(['\'', '"'].as_ref());
 
+        // Error in case wrong path
+
         if !Path::new(&path).exists() {
             eprintln!(
                 "{}",
@@ -41,7 +43,7 @@ fn main() -> io::Result<()> {
             continue;
         }
 
-        // Open OTP and read Common Key
+        // Open OTP and print the Common Key
         let mut file = File::open(path)?;
         file.seek(io::SeekFrom::Start(COMMON_KEY_OFFSET))?;
 
@@ -54,7 +56,7 @@ fn main() -> io::Result<()> {
         }
         println!("\n");
 
-        // Wait forever until Ctrl+C
+        // Wait until Crtl+C
         loop {
             thread::sleep(Duration::from_secs(1));
         }
