@@ -23,7 +23,7 @@ fn main() -> io::Result<()> {
         clear_screen();
         println!("Where is your OTP path?");
         println!("You can drag and drop it in Finder / File Explorer.");
-        println!("> ");
+        print!("> ");
         io::stdout().flush()?; // flush prompt
 
         let mut path = String::new();
